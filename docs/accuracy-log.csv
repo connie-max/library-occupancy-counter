@@ -1,0 +1,4 @@
+time,seat,real_status,system_status
+15:30,T1-S1,taken,taken
+15:30,T1-S2,vacant,vacant
+15:30,T1-S3,taken,vacant
