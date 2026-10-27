@@ -2,28 +2,41 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>History</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 30px; }
-    nav a { margin-right: 15px; }
-    table { border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #999; padding: 8px 16px; text-align: left; }
-    th { background: #eee; }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <nav>
-    <a href="/">Live</a>
-    <a href="/history">History</a>
-    <a href="/logout">Logout</a>
-  </nav>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <span class="brand">Library Seat Monitor</span>
+      <nav>
+        <a href="/">Live</a>
+        <a href="/history" class="active">History</a>
+        <a href="/logout">Logout</a>
+      </nav>
+    </div>
+  </header>
 
-  <h1>History</h1>
-  <table>
-    <tr><th>Time</th><th>Seat</th><th>Event</th></tr>
-    {% for row in rows %}
-      <tr><td>{{ row.time }}</td><td>{{ row.seat }}</td><td>{{ row.event }}</td></tr>
-    {% endfor %}
-  </table>
+  <main class="page">
+    <h1>History</h1>
+
+    {% if rows %}
+      <section class="card table-wrap">
+        <table>
+          <tr><th>Time</th><th>Seat</th><th>Status</th></tr>
+          {% for row in rows %}
+            <tr>
+              <td>{{ row.time }}</td>
+              <td>{{ row.seat }}</td>
+              <td><span class="pill {{ row.event|lower }}">{{ row.event }}</span></td>
+            </tr>
+          {% endfor %}
+        </table>
+      </section>
+    {% else %}
+      <div class="notice">No history yet.</div>
+    {% endif %}
+  </main>
 </body>
 </html>
