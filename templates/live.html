@@ -1,55 +1,59 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Live Seat Map</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-  <header class="topbar">
-    <div class="topbar-inner">
-      <span class="brand">Library Seat Monitor</span>
-      <nav>
-        <a href="/" class="active">Live</a>
-        <a href="/history">History</a>
-        <a href="/logout">Logout</a>
-      </nav>
-    </div>
-  </header>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Live Seat Map</title>
+        <meta http-equiv="refresh" content="3" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    </head>
+    <body>
+        <header class="topbar">
+            <div class="topbar-inner">
+                <span class="brand">Library Seat Monitor</span>
+                <nav>
+                    <a href="/" class="active">Live</a>
+                    <a href="/history">History</a>
+                    <a href="/logout">Logout</a>
+                </nav>
+            </div>
+        </header>
 
-  <main class="page">
-    <h1>Live Seat Map</h1>
+        <main class="page">
+            <h1>Live Seat Map</h1>
 
-    {% if total > 0 and vacant == 0 %}
-      <div class="banner-full">LIBRARY FULL</div>
-    {% endif %}
+            {% if total > 0 and vacant == 0 %}
+            <div class="banner-full">LIBRARY FULL</div>
+            {% endif %} {% if total == 0 %}
+            <div class="notice">No seat data yet.</div>
+            {% endif %}
 
-    {% if total == 0 %}
-      <div class="notice">No seat data yet.</div>
-    {% endif %}
+            <div class="counts">
+                <div class="card stat">
+                    <span class="num">{{ total }}</span><span class="label">Total</span>
+                </div>
+                <div class="card stat taken">
+                    <span class="num">{{ taken }}</span><span class="label">Taken</span>
+                </div>
+                <div class="card stat vacant">
+                    <span class="num">{{ vacant }}</span><span class="label">Vacant</span>
+                </div>
+            </div>
 
-    <div class="counts">
-      <div class="card stat"><span class="num">{{ total }}</span><span class="label">Total</span></div>
-      <div class="card stat taken"><span class="num">{{ taken }}</span><span class="label">Taken</span></div>
-      <div class="card stat vacant"><span class="num">{{ vacant }}</span><span class="label">Vacant</span></div>
-    </div>
-
-    <section class="card">
-      <h2>Seat map</h2>
-      <div class="grid">
-        {% for seat, is_taken in seats.items() %}
-          <div class="seat {{ 'taken' if is_taken else 'vacant' }}">
-            {{ seat }}
-            <small>{{ 'Taken' if is_taken else 'Vacant' }}</small>
-          </div>
-        {% endfor %}
-      </div>
-      <p class="legend">
-        <span class="dot vacant"></span> vacant
-        <span class="dot taken"></span> taken
-      </p>
-    </section>
-  </main>
-</body>
+            <section class="card">
+                <h2>Seat map</h2>
+                <div class="grid">
+                    {% for seat, is_taken in seats.items() %}
+                    <div class="seat {{ 'taken' if is_taken else 'vacant' }}">
+                        {{ seat }}
+                        <small>{{ 'Taken' if is_taken else 'Vacant' }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                <p class="legend">
+                    <span class="dot vacant"></span> vacant <span class="dot taken"></span> taken
+                </p>
+            </section>
+        </main>
+    </body>
 </html>
