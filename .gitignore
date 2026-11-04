@@ -2,3 +2,5 @@ data/
 *.db
 secret_key
 __pycache__/
+yolov8n.pt
+seats.json.bak
