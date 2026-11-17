@@ -7,6 +7,7 @@ No camera images are ever saved. Each frame is used once and thrown away.
 
 Examples:
     python monitor.py --fake                  (no camera needed, for testing)
+    python monitor.py --fake --busy --count 5 (show LIBRARY FULL on demand)
     python monitor.py --source 0 --show       (laptop webcam, show a preview)
     python monitor.py --source http://192.168.1.15:8080/video   (phone, IP Webcam)
 """
@@ -27,11 +28,15 @@ def load_seats(path):
     return {name: tuple(box) for name, box in data.items()}
 
 
-def fake_people(seats):
-    """Pretend detector for testing: puts a person on about half of the seats."""
+def fake_people(seats, busy=False):
+    """Pretend detector for testing: puts a person on about half of the seats.
+
+    With busy=True, puts a person on every seat, so the dashboard
+    shows LIBRARY FULL after the 3-of-5 rule settles (about 6 seconds).
+    """
     people = []
     for x1, y1, x2, y2 in seats.values():
-        if random.random() < 0.5:
+        if busy or random.random() < 0.5:
             people.append((x1 - 5, y1 - 30, x2 + 5, y2))
     return people
 
@@ -73,6 +78,8 @@ def main():
                         help="seconds between checks")
     parser.add_argument("--fake", action="store_true",
                         help="use a fake detector (no camera needed)")
+    parser.add_argument("--busy", action="store_true",
+                        help="with --fake: pretend every seat is taken, to show LIBRARY FULL")
     parser.add_argument("--show", action="store_true",
                         help="show a live preview window")
     parser.add_argument("--count", type=int, default=0,
@@ -101,7 +108,7 @@ def main():
         while True:
             frame = None
             if args.fake:
-                people = fake_people(seats)
+                people = fake_people(seats, busy=args.busy)
             else:
                 ok, frame = cap.read()
                 if not ok:
