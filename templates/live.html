@@ -6,15 +6,61 @@
         <title>Live Seat Map</title>
         <meta http-equiv="refresh" content="3" />
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <script>
+            try {
+                if (localStorage.getItem('theme') === 'light') {
+                    document.documentElement.setAttribute('data-theme', 'light')
+                }
+            } catch (e) {}
+            document.addEventListener('DOMContentLoaded', function () {
+                var btn = document.getElementById('theme-toggle')
+                if (!btn) {
+                    return
+                }
+                function label() {
+                    btn.textContent =
+                        document.documentElement.getAttribute('data-theme') === 'light'
+                            ? 'Dark'
+                            : 'Light'
+                }
+                label()
+                btn.addEventListener('click', function () {
+                    var light = document.documentElement.getAttribute('data-theme') === 'light'
+                    if (light) {
+                        document.documentElement.removeAttribute('data-theme')
+                        try {
+                            localStorage.setItem('theme', 'dark')
+                        } catch (e) {}
+                    } else {
+                        document.documentElement.setAttribute('data-theme', 'light')
+                        try {
+                            localStorage.setItem('theme', 'light')
+                        } catch (e) {}
+                    }
+                    label()
+                })
+            })
+        </script>
     </head>
     <body>
         <header class="topbar">
             <div class="topbar-inner">
-                <span class="brand">Library Seat Monitor</span>
+                <div>
+                    <span class="brand">Library Seat Monitor</span
+                    ><span class="brand-sub">Legacy College of Compostela</span>
+                </div>
                 <nav>
                     <a href="/" class="active">Live</a>
+                    <a href="/analytics">Analytics</a>
                     <a href="/history">History</a>
                     <a href="/logout">Logout</a>
+                    <button id="theme-toggle" class="theme-toggle" type="button">Light</button>
                 </nav>
             </div>
         </header>
@@ -24,6 +70,8 @@
 
             {% if total > 0 and vacant == 0 %}
             <div class="banner-full">LIBRARY FULL</div>
+            {% endif %} {% if total > 0 and vacant > 0 %}
+            <div class="banner-free">SEATS AVAILABLE - COME IN</div>
             {% endif %} {% if total == 0 %}
             <div class="notice">No seat data yet.</div>
             {% endif %}
@@ -38,22 +86,79 @@
                 <div class="card stat vacant">
                     <span class="num">{{ vacant }}</span><span class="label">Vacant</span>
                 </div>
+                {% if people is not none %}
+                <div class="card stat">
+                    <span class="num">{{ people }}</span><span class="label">People inside</span>
+                </div>
+                {% endif %}
             </div>
+
+            {% if people is not none %}
+            <p class="legend">
+                People inside is how many people the camera sees right now ({{ people_time }}).
+                Seats taken only counts people sitting on a monitored seat, so the two numbers can
+                be different: someone standing or sitting at the counter counts as a person inside,
+                but not as a taken seat.
+            </p>
+            {% endif %} {% if last_check %}
+            <p class="updated">
+                Last check: {{ last_check }}. This page refreshes every 3 seconds.
+            </p>
+            {% endif %} {% if camera_url %}
+            <section class="card">
+                <h2>Live Camera</h2>
+                <img class="camera-feed" src="{{ camera_url }}" alt="Live camera feed" />
+                <p class="legend">
+                    Live feed from the room camera. The seat map above shows what the system detects
+                    from this feed.
+                </p>
+            </section>
+            {% endif %}
 
             <section class="card">
                 <h2>Seat map</h2>
-                <div class="grid">
-                    {% for seat, is_taken in seats.items() %}
-                    <div class="seat {{ 'taken' if is_taken else 'vacant' }}">
-                        {{ seat }}
-                        <small>{{ 'Taken' if is_taken else 'Vacant' }}</small>
-                    </div>
-                    {% endfor %}
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Table</th>
+                                <th>Seat</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in seat_table %} {% for s in t.seats %}
+                            <tr>
+                                <td>{{ t.name }}</td>
+                                <td>{{ s.name }}</td>
+                                <td>
+                                    <span class="pill {{ 'taken' if s.taken else 'vacant' }}"
+                                        >{{ 'Taken' if s.taken else 'Vacant' }}</span
+                                    >
+                                </td>
+                            </tr>
+                            {% endfor %} {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
                 <p class="legend">
-                    <span class="dot vacant"></span> vacant <span class="dot taken"></span> taken
+                    Every seat and its status, live. Green is vacant, red is taken.
                 </p>
             </section>
+
+            {% if tables %}
+            <section class="card">
+                <h2>Seats by table</h2>
+                <div class="tables-row">
+                    {% for t in tables %}
+                    <span class="table-chip {{ 'full' if t.vacant == 0 else 'has-free' }}"
+                        >{{ t.name }}: {{ t.vacant }} free of {{ t.total }}</span
+                    >
+                    {% endfor %}
+                </div>
+                <p class="legend">Which table still has a free seat, at a glance.</p>
+            </section>
+            {% endif %}
         </main>
     </body>
 </html>

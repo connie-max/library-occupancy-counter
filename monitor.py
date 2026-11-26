@@ -14,6 +14,7 @@ Examples:
 
 import argparse
 import json
+import os
 import random
 import time
 
@@ -120,6 +121,13 @@ def main():
             frame_result = assign_people_to_seats(seats, people)
             status = tracker.update(frame_result)
             save_reading(status)
+            # People inside: how many people the camera sees right now.
+            # Saved to a small file so the dashboard can show it. This
+            # is the count from the latest frame, not a vote like the
+            # seats, so it can go up or down by one between checks.
+            with open(os.path.join("data", "people.json"), "w") as f:
+                json.dump({"people": len(people),
+                           "time": time.strftime("%Y-%m-%d %H:%M:%S")}, f)
 
             info = summarize(status)
             print(time.strftime("%H:%M:%S"),

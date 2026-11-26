@@ -70,6 +70,18 @@ def get_latest(path=None):
     return {seat: bool(taken) for seat, taken in rows}
 
 
+def get_latest_time(path=None):
+    """Return the time of the newest check, like "2026-11-25 22:52:10".
+
+    Empty string if there is no data yet. The dashboard shows this so
+    staff can see the numbers are live, not from an hour ago.
+    """
+    conn = _connect(path)
+    newest = conn.execute("SELECT MAX(timestamp) FROM readings").fetchone()[0]
+    conn.close()
+    return newest or ""
+
+
 def get_history(path=None):
     """Return every reading as a list of (timestamp, seat, taken), oldest first."""
     conn = _connect(path)

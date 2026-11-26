@@ -1,4 +1,9 @@
 time,seat,real_status,system_status
-15:30,T1-S1,taken,taken
-15:30,T1-S2,vacant,vacant
-15:30,T1-S3,taken,vacant
+12:55,T1-S1,taken,taken
+12:55,T1-S2,vacant,vacant
+12:55,T1-S3,vacant,vacant
+12:55,T1-S4,vacant,vacant
+12:59,T1-S1,vacant,vacant
+12:59,T1-S2,vacant,vacant
+12:59,T1-S3,vacant,vacant
+12:59,T1-S4,vacant,vacant

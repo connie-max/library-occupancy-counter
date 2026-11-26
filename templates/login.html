@@ -1,21 +1,70 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Staff Login</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-  <div class="login-wrap">
-    <form class="card login-card" method="POST" action="/login">
-      <h1>Staff Login</h1>
-      <p class="subtitle">Library Seat Monitor. For library staff only.</p>
-      {% if error %}<div class="error">{{ error }}</div>{% endif %}
-      <input type="text" name="username" placeholder="Username" required>
-      <input type="password" name="password" placeholder="Password" required>
-      <button type="submit">Log in</button>
-    </form>
-  </div>
-</body>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Staff Login</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <script>
+            try {
+                if (localStorage.getItem('theme') === 'light') {
+                    document.documentElement.setAttribute('data-theme', 'light')
+                }
+            } catch (e) {}
+            document.addEventListener('DOMContentLoaded', function () {
+                var btn = document.getElementById('theme-toggle')
+                if (!btn) {
+                    return
+                }
+                function label() {
+                    btn.textContent =
+                        document.documentElement.getAttribute('data-theme') === 'light'
+                            ? 'Dark'
+                            : 'Light'
+                }
+                label()
+                btn.addEventListener('click', function () {
+                    var light = document.documentElement.getAttribute('data-theme') === 'light'
+                    if (light) {
+                        document.documentElement.removeAttribute('data-theme')
+                        try {
+                            localStorage.setItem('theme', 'dark')
+                        } catch (e) {}
+                    } else {
+                        document.documentElement.setAttribute('data-theme', 'light')
+                        try {
+                            localStorage.setItem('theme', 'light')
+                        } catch (e) {}
+                    }
+                    label()
+                })
+            })
+        </script>
+    </head>
+    <body>
+        <button id="theme-toggle" class="theme-toggle theme-toggle--fixed" type="button">
+            Light
+        </button>
+        <div class="login-wrap">
+            <form class="card login-card" method="POST" action="/login">
+                <h1>Staff Login</h1>
+                <p class="subtitle">
+                    Legacy College of Compostela - Library Seat Monitor. For library staff only.
+                </p>
+                {% if error %}
+                <div class="error">{{ error }}</div>
+                {% endif %}
+                <input type="text" name="username" placeholder="Username" required />
+                <input type="password" name="password" placeholder="Password" required />
+                <button type="submit">Log in</button>
+                <p class="demo-hint">Demo account for the defence: staff / demo-pass-123</p>
+            </form>
+        </div>
+    </body>
 </html>

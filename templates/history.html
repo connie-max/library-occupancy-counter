@@ -1,42 +1,125 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>History</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-  <header class="topbar">
-    <div class="topbar-inner">
-      <span class="brand">Library Seat Monitor</span>
-      <nav>
-        <a href="/">Live</a>
-        <a href="/history" class="active">History</a>
-        <a href="/logout">Logout</a>
-      </nav>
-    </div>
-  </header>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>History</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <script>
+            try {
+                if (localStorage.getItem('theme') === 'light') {
+                    document.documentElement.setAttribute('data-theme', 'light')
+                }
+            } catch (e) {}
+            document.addEventListener('DOMContentLoaded', function () {
+                var btn = document.getElementById('theme-toggle')
+                if (!btn) {
+                    return
+                }
+                function label() {
+                    btn.textContent =
+                        document.documentElement.getAttribute('data-theme') === 'light'
+                            ? 'Dark'
+                            : 'Light'
+                }
+                label()
+                btn.addEventListener('click', function () {
+                    var light = document.documentElement.getAttribute('data-theme') === 'light'
+                    if (light) {
+                        document.documentElement.removeAttribute('data-theme')
+                        try {
+                            localStorage.setItem('theme', 'dark')
+                        } catch (e) {}
+                    } else {
+                        document.documentElement.setAttribute('data-theme', 'light')
+                        try {
+                            localStorage.setItem('theme', 'light')
+                        } catch (e) {}
+                    }
+                    label()
+                })
+            })
+        </script>
+    </head>
+    <body>
+        <header class="topbar">
+            <div class="topbar-inner">
+                <div>
+                    <span class="brand">Library Seat Monitor</span
+                    ><span class="brand-sub">Legacy College of Compostela</span>
+                </div>
+                <nav>
+                    <a href="/">Live</a>
+                    <a href="/analytics">Analytics</a>
+                    <a href="/history" class="active">History</a>
+                    <a href="/logout">Logout</a>
+                    <button id="theme-toggle" class="theme-toggle" type="button">Light</button>
+                </nav>
+            </div>
+        </header>
 
-  <main class="page">
-    <h1>History</h1>
+        <main class="page">
+            <h1>History</h1>
 
-    {% if rows %}
-      <section class="card table-wrap">
-        <table>
-          <tr><th>Time</th><th>Seat</th><th>Status</th></tr>
-          {% for row in rows %}
-            <tr>
-              <td>{{ row.time }}</td>
-              <td>{{ row.seat }}</td>
-              <td><span class="pill {{ row.event|lower }}">{{ row.event }}</span></td>
-            </tr>
-          {% endfor %}
-        </table>
-      </section>
-    {% else %}
-      <div class="notice">No history yet.</div>
-    {% endif %}
-  </main>
-</body>
+            {% if checks %}
+            <div class="counts">
+                <div class="card stat">
+                    <span class="num">{{ total_checks }}</span><span class="label">Checks</span>
+                </div>
+                <div class="card stat">
+                    <span class="num">{{ avg_taken }}</span
+                    ><span class="label">Avg seats taken</span>
+                </div>
+                <div class="card stat">
+                    <span class="num">{{ checks[0].total }}</span><span class="label">Seats</span>
+                </div>
+            </div>
+            <p class="legend">
+                From {{ first_time }} to {{ last_time }}. Showing the latest 100 checks, newest
+                first. One row is one check of the whole room.
+            </p>
+            {% if busiest %}
+            <div class="notice">
+                Busiest moment: {{ busiest.time }} — {{ busiest.taken }} of {{ busiest.total }}
+                seats taken ({{ busiest.get('pct', 0) }}% full).
+            </div>
+            {% endif %}
+
+            <section class="card table-wrap">
+                <table>
+                    <tr>
+                        <th>Time</th>
+                        <th>Taken</th>
+                        <th>Vacant</th>
+                        <th>How full</th>
+                    </tr>
+                    {% for check in checks %}
+                    <tr>
+                        <td>{{ check.time }}</td>
+                        <td>{{ check.taken }} / {{ check.total }}</td>
+                        <td>{{ check.vacant }}</td>
+                        <td>
+                            <div class="occ-bar">
+                                <div
+                                    class="occ-fill {{ 'high' if check.get('pct', 0) >= 80 else 'mid' if check.get('pct', 0) >= 50 else 'low' }}"
+                                    style="width: {{ check.get('pct', 0) }}%"
+                                ></div>
+                            </div>
+                            {{ check.get('pct', 0) }}%
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </section>
+            {% else %}
+            <div class="notice">No history yet.</div>
+            {% endif %}
+        </main>
+    </body>
 </html>

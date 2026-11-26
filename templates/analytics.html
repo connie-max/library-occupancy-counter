@@ -1,0 +1,197 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Analytics</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <script>
+            try {
+                if (localStorage.getItem('theme') === 'light') {
+                    document.documentElement.setAttribute('data-theme', 'light')
+                }
+            } catch (e) {}
+            document.addEventListener('DOMContentLoaded', function () {
+                var btn = document.getElementById('theme-toggle')
+                if (!btn) {
+                    return
+                }
+                function label() {
+                    btn.textContent =
+                        document.documentElement.getAttribute('data-theme') === 'light'
+                            ? 'Dark'
+                            : 'Light'
+                }
+                label()
+                btn.addEventListener('click', function () {
+                    var light = document.documentElement.getAttribute('data-theme') === 'light'
+                    if (light) {
+                        document.documentElement.removeAttribute('data-theme')
+                        try {
+                            localStorage.setItem('theme', 'dark')
+                        } catch (e) {}
+                    } else {
+                        document.documentElement.setAttribute('data-theme', 'light')
+                        try {
+                            localStorage.setItem('theme', 'light')
+                        } catch (e) {}
+                    }
+                    label()
+                })
+            })
+        </script>
+    </head>
+    <body>
+        <header class="topbar">
+            <div class="topbar-inner">
+                <div>
+                    <span class="brand">Library Seat Monitor</span
+                    ><span class="brand-sub">Legacy College of Compostela</span>
+                </div>
+                <nav>
+                    <a href="/">Live</a>
+                    <a href="/analytics" class="active">Analytics</a>
+                    <a href="/history">History</a>
+                    <a href="/logout">Logout</a>
+                    <button id="theme-toggle" class="theme-toggle" type="button">Light</button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="page">
+            <h1>Analytics</h1>
+
+            {% if empty %}
+            <div class="notice">No readings yet. Run monitor.py first, then come back here.</div>
+            {% else %}
+            <div class="notice">
+                Live data from the library camera, from 26 Nov 2026. These are real readings, not
+                samples.
+            </div>
+
+            <div class="counts">
+                <div class="card stat">
+                    <span class="num">{{ total_checks }}</span><span class="label">Checks</span>
+                </div>
+                <div class="card stat">
+                    <span class="num">{{ peak_hour }}:00</span><span class="label">Next peak</span>
+                </div>
+                <div class="card stat">
+                    <span class="num">{{ peak_seats }}</span
+                    ><span class="label">Seats at peak</span>
+                </div>
+                {% if people is not none %}
+                <div class="card stat">
+                    <span class="num">{{ people }}</span
+                    ><span class="label">People inside now</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <section class="card">
+                <h2>Busiest hours</h2>
+                <table>
+                    <tr>
+                        <th>Hour</th>
+                        <th>Average seats taken</th>
+                    </tr>
+                    {% for row in top_hours %}
+                    <tr>
+                        <td>{{ row.hour }}:00</td>
+                        <td>{{ row.seats }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </section>
+
+            <section class="card">
+                <h2>Busiest days</h2>
+                <table>
+                    <tr>
+                        <th>Day</th>
+                        <th>Average seats taken</th>
+                    </tr>
+                    {% for row in top_days %}
+                    <tr>
+                        <td>{{ row.day }}</td>
+                        <td>{{ row.seats }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </section>
+
+            {% if chart_exists %}
+            <section class="card">
+                <h2>Average occupancy by hour</h2>
+                <img
+                    class="chart"
+                    src="{{ url_for('static', filename='hourly.png') }}"
+                    alt="Average library occupancy by hour"
+                />
+            </section>
+            {% endif %}
+
+            <section class="card">
+                <h2>Forecast</h2>
+                <p>
+                    Next peak: tomorrow around {{ peak_hour }}:00, about {{ peak_seats }} seats
+                    taken.
+                </p>
+                <p class="legend">
+                    The forecast is the busiest hour in the data so far. It is a simple hourly
+                    average, not a machine learning model.
+                </p>
+                <p class="legend">Data from {{ first_time }} to {{ last_time }}.</p>
+            </section>
+
+            <button class="print-btn" type="button" onclick="window.print()">Print report</button>
+            <button
+                class="print-btn"
+                type="button"
+                onclick="window.location.href = '/analytics/report'"
+            >
+                Download report (PDF)
+            </button>
+
+            <section class="card">
+                <h2>Custom report</h2>
+                <p class="legend">
+                    Pick a day, a time range, and a chart type, then download a PDF for just that
+                    selection. The chart types come from sir's EDA lecture: bar, histogram, box
+                    plot, and scatter plot.
+                </p>
+                <form method="get" action="/analytics/report/custom">
+                    <label
+                        >Day
+                        <input type="date" name="date" value="2026-11-26" />
+                    </label>
+                    <label
+                        >From hour
+                        <input type="number" name="start_hour" min="0" max="23" value="0" />
+                    </label>
+                    <label
+                        >To hour
+                        <input type="number" name="end_hour" min="0" max="23" value="23" />
+                    </label>
+                    <label
+                        >Chart
+                        <select name="chart">
+                            <option value="bar">Bar: average seats by hour</option>
+                            <option value="histogram">Histogram: shape of the counts</option>
+                            <option value="box">Box plot: middle and outliers</option>
+                            <option value="scatter">Scatter: hour against seats taken</option>
+                        </select>
+                    </label>
+                    <button class="print-btn" type="submit">Download custom report (PDF)</button>
+                </form>
+            </section>
+            {% endif %}
+        </main>
+    </body>
+</html>
